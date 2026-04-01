@@ -160,6 +160,10 @@ Route heatmap snapshot:
 
 ## CI Usage (GitHub Actions)
 
+Important:
+- For this package repository, run package tests only.
+- Run IndexLens runtime budgets in the host Laravel application repository where an artisan file and real route/query traffic exist.
+
 ```yaml
 name: indexlens-performance
 
@@ -169,7 +173,7 @@ on:
     branches: [main]
 
 jobs:
-  performance:
+  package-tests:
     runs-on: ubuntu-latest
 
     steps:
@@ -181,7 +185,6 @@ jobs:
 
       - run: composer install --no-interaction --prefer-dist
       - run: php artisan test
-      - run: php artisan indexlens:ci --max-query=50 --max-time=200
 ```
 
 ## Debug View
