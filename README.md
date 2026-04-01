@@ -1,5 +1,7 @@
 # IndexLens
 
+![IndexLens Banner](banner.png)
+
 Intelligent query observability and optimization engine for Laravel.
 
 IndexLens is built for teams that want to move beyond basic query logs. It captures runtime SQL behavior, explains performance bottlenecks, recommends practical fixes, and guards performance budgets in CI.
