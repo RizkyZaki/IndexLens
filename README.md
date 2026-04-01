@@ -55,7 +55,7 @@ It is designed to detect:
 ## Installation
 
 ```bash
-composer require indexlens/indexlens
+composer require zxch/indexlens
 php artisan vendor:publish --tag=indexlens-config
 php artisan vendor:publish --tag=indexlens-migrations
 php artisan migrate

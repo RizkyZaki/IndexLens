@@ -1,5 +1,5 @@
 {
-    "name": "indexlens/indexlens",
+    "name": "zxch/indexlens",
     "description": "Intelligent database query observability and optimization package for Laravel.",
     "type": "library",
     "license": "MIT",
