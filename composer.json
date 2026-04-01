@@ -1,0 +1,50 @@
+{
+    "name": "indexlens/indexlens",
+    "description": "Intelligent database query observability and optimization package for Laravel.",
+    "type": "library",
+    "license": "MIT",
+    "keywords": [
+        "laravel",
+        "query",
+        "performance",
+        "database",
+        "observability",
+        "index"
+    ],
+    "require": {
+        "php": "^8.2",
+        "illuminate/support": "^10.0|^11.0|^12.0",
+        "illuminate/database": "^10.0|^11.0|^12.0",
+        "illuminate/console": "^10.0|^11.0|^12.0",
+        "symfony/console": "^6.0|^7.0"
+    },
+    "require-dev": {
+        "orchestra/testbench": "^8.0|^9.0|^10.0",
+        "phpunit/phpunit": "^10.0|^11.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "IndexLens\\IndexLens\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "IndexLens\\IndexLens\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "IndexLens\\IndexLens\\IndexLensServiceProvider"
+            ],
+            "aliases": {
+                "IndexLens": "IndexLens\\IndexLens\\Facades\\IndexLens"
+            }
+        }
+    },
+    "scripts": {
+        "test": "phpunit"
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}
