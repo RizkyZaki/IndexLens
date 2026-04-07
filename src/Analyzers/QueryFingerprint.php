@@ -8,7 +8,7 @@ class QueryFingerprint
     {
         $normalized = preg_replace('/\s+/', ' ', trim(strtolower($sql)));
         $normalized = preg_replace('/\b\d+\b/', '?', $normalized ?? '');
-        $normalized = preg_replace('/\'(?:[^\'\\]|\\.)*\'/', '?', $normalized ?? '');
+        $normalized = preg_replace("/'(?:\\\\.|[^'\\\\])*'/", '?', $normalized ?? '');
 
         return $normalized ?? strtolower(trim($sql));
     }
