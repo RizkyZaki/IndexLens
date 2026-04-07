@@ -17,6 +17,10 @@ class RegressionService
 
         $regressions = [];
         foreach ($current as $route => $now) {
+            if ((bool) config('indexlens.regression_ignore_cli', true) && $route === 'cli') {
+                continue;
+            }
+
             if (! isset($previous[$route])) {
                 continue;
             }
@@ -31,6 +35,11 @@ class RegressionService
             }
 
             $ratio = $after / $before;
+            $deltaMs = $after - $before;
+            if ($deltaMs < (float) config('indexlens.regression_min_delta_ms', 50)) {
+                continue;
+            }
+
             if ($ratio < 1.25 && $queryAfter <= ($queryBefore * 1.25)) {
                 continue;
             }

@@ -8,7 +8,13 @@ and this project follows Semantic Versioning.
 ## [Unreleased]
 
 ### Added
-- Planned: deeper database-driver explain adapters and extended analyzer test coverage.
+- Added runtime mode presets (`off`, `safe`, `balanced`, `investigate`) for production-safe operation.
+- Added `indexlens:status` artisan command to inspect active runtime safety settings.
+
+### Changed
+- Added request sampling, CLI capture filtering, route ignore patterns, and max queries-per-request guards.
+- Added optional persistence for slow requests only to reduce production write overhead.
+- Regression detector now ignores CLI routes by default and requires minimum latency delta.
 
 ## [1.0.3] - 2026-04-07
 

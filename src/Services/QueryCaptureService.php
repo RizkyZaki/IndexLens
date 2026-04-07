@@ -15,6 +15,8 @@ class QueryCaptureService
 {
     protected bool $enabled;
 
+    protected bool $requestSampled = true;
+
     protected int $requestStartedAt;
 
     protected int $memoryStart;
@@ -28,7 +30,9 @@ class QueryCaptureService
         protected ProfileRepository $repository,
         protected QueryFingerprint $fingerprint
     ) {
+        $this->applyModeDefaults();
         $this->enabled = (bool) config('indexlens.enabled', true);
+        $this->requestSampled = $this->shouldSampleRequest();
         $this->requestStartedAt = hrtime(true);
         $this->memoryStart = memory_get_usage(true);
         $this->memoryPeak = memory_get_peak_usage(true);
@@ -37,11 +41,21 @@ class QueryCaptureService
     public function boot(): void
     {
         DB::listen(function (QueryExecuted $event): void {
-            if (! $this->enabled) {
+            if (! $this->enabled || ! $this->requestSampled) {
                 return;
             }
 
             $route = request()?->route();
+            $routeName = $route?->getName() ?? $route?->uri() ?? 'cli';
+
+            if ($this->shouldSkipRoute($routeName)) {
+                return;
+            }
+
+            if (count($this->queries) >= (int) config('indexlens.max_queries_per_request', 250)) {
+                return;
+            }
+
             $memoryBefore = memory_get_usage(true);
             $durationMs = (int) ((hrtime(true) - $this->requestStartedAt) / 1_000_000);
 
@@ -51,7 +65,7 @@ class QueryCaptureService
                 bindings: $event->bindings,
                 timeMs: (float) $event->time,
                 connection: $event->connectionName,
-                route: $route?->getName() ?? $route?->uri() ?? 'cli',
+                route: $routeName,
                 url: request()?->fullUrl() ?? 'cli://local',
                 action: $route?->getActionName(),
                 userId: Auth::id(),
@@ -66,7 +80,7 @@ class QueryCaptureService
         });
 
         app()->terminating(function (): void {
-            if (! $this->enabled) {
+            if (! $this->enabled || ! $this->requestSampled) {
                 return;
             }
 
@@ -132,8 +146,11 @@ class QueryCaptureService
 
         if ((bool) config('indexlens.store_profiles', true)) {
             try {
-                $this->repository->persistQueryProfiles($this->queries);
-                $this->repository->persistRouteProfile($profile);
+                if (! (bool) config('indexlens.persist_only_slow_requests', false)
+                    || $profile->totalSqlTimeMs >= (float) config('indexlens.slow_query_ms', 100)) {
+                    $this->repository->persistQueryProfiles($this->queries);
+                    $this->repository->persistRouteProfile($profile);
+                }
             } catch (\Throwable $e) {
                 Log::debug('IndexLens persistence skipped: ' . $e->getMessage());
             }
@@ -154,5 +171,66 @@ class QueryCaptureService
         $duplicates = array_filter($map, fn ($count) => $count > 1);
 
         return (int) array_sum(array_map(fn ($count) => $count - 1, $duplicates));
+    }
+
+    protected function shouldSampleRequest(): bool
+    {
+        $rate = (float) config('indexlens.sample_rate', 1.0);
+        if ($rate >= 1.0) {
+            return true;
+        }
+
+        if ($rate <= 0.0) {
+            return false;
+        }
+
+        return mt_rand(1, 10000) <= (int) round($rate * 10000);
+    }
+
+    protected function shouldSkipRoute(string $routeName): bool
+    {
+        if ($routeName === 'cli' && ! (bool) config('indexlens.capture_cli', false)) {
+            return true;
+        }
+
+        foreach ((array) config('indexlens.ignore_routes', []) as $pattern) {
+            if (fnmatch((string) $pattern, $routeName)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    protected function applyModeDefaults(): void
+    {
+        $mode = strtolower((string) config('indexlens.mode', 'balanced'));
+
+        if ($mode === 'off') {
+            config(['indexlens.enabled' => false]);
+
+            return;
+        }
+
+        if ($mode === 'safe') {
+            config([
+                'indexlens.run_explain' => false,
+                'indexlens.store_profiles' => false,
+                'indexlens.capture_cli' => false,
+                'indexlens.sample_rate' => 0.25,
+                'indexlens.slow_query_ms' => max(300, (int) config('indexlens.slow_query_ms', 100)),
+            ]);
+
+            return;
+        }
+
+        if ($mode === 'investigate') {
+            config([
+                'indexlens.run_explain' => false,
+                'indexlens.store_profiles' => true,
+                'indexlens.capture_cli' => false,
+                'indexlens.sample_rate' => 1.0,
+            ]);
+        }
     }
 }

@@ -6,6 +6,7 @@ use Illuminate\Support\ServiceProvider;
 use IndexLens\IndexLens\Commands\CiBudgetCommand;
 use IndexLens\IndexLens\Commands\RegressionCommand;
 use IndexLens\IndexLens\Commands\ReportCommand;
+use IndexLens\IndexLens\Commands\StatusCommand;
 use IndexLens\IndexLens\Commands\RoutesCommand;
 use IndexLens\IndexLens\Commands\ScanCommand;
 use IndexLens\IndexLens\Contracts\IndexLensContract;
@@ -71,6 +72,7 @@ class IndexLensServiceProvider extends ServiceProvider
                 RegressionCommand::class,
                 CiBudgetCommand::class,
                 ReportCommand::class,
+                StatusCommand::class,
             ]);
         }
 
