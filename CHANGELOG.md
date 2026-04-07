@@ -10,6 +10,11 @@ and this project follows Semantic Versioning.
 ### Added
 - Planned: deeper database-driver explain adapters and extended analyzer test coverage.
 
+## [1.0.3] - 2026-04-07
+
+### Fixed
+- Fixed MySQL migration failure by removing index creation on LONGTEXT normalized_sql in query_profiles.
+
 ## [1.0.1] - 2026-04-01
 
 ### Added

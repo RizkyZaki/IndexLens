@@ -11,7 +11,7 @@ return new class extends Migration {
             $table->id();
             $table->string('route')->nullable()->index();
             $table->longText('sql');
-            $table->longText('normalized_sql')->index();
+            $table->longText('normalized_sql');
             $table->float('execution_time')->default(0);
             $table->float('memory_usage')->default(0);
             $table->unsignedInteger('duplicate_count')->default(1);
